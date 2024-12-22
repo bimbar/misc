@@ -4,7 +4,7 @@
 #
 # Usage possible in steam to enable HDR in a game as follows
 #
-# hdr.sh on && gamescope --hdr-enabled -W3840 -H2160 -f --force-grab-cursor -- %command% && hdr.sh off
+# hdr.sh on && gamescope --hdr-enabled -W3840 -H2160 -f --force-grab-cursor -- %command%; hdr.sh off
 #
 
 usage() { echo "Usage: $0 <on|off>" 1>&2; exit 1; }
