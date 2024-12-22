@@ -1,6 +1,11 @@
 #!/bin/sh
 # Credits to https://www.reddit.com/r/kde/comments/1bcf0ak/toggling_hdr_via_shortcut_or_command/
 # I added the brightness, which is fairly necessary for this kind of switch
+#
+# Usage possible in steam to enable HDR in a game as follows
+#
+# hdr.sh on && gamescope --hdr-enabled -W3840 -H2160 -f --force-grab-cursor -- %command% && hdr.sh off
+#
 
 usage() { echo "Usage: $0 <on|off>" 1>&2; exit 1; }
 
