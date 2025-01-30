@@ -1,0 +1,213 @@
+#              ______ _                   __                  __
+#             /_  __/(_)____ ___   ___   / /_   ___   ____ _ / /_
+#              / /  / // __ `__ \ / _ \ / __ \ / _ \ / __ `// __/
+#             / /  / // / / / / //  __// /_/ //  __// /_/ // /_
+#            /_/  /_//_/ /_/ /_/ \___//_.___/ \___/ \__,_/ \__/
+
+################### Timebeat Configuration AREA #########################
+
+timebeat:
+
+  # Location of license key file for premium features
+  license.keyfile: '/etc/timebeat/timebeat.lic'
+
+  # Location of peer identities config file (if not set: don't save to file)
+  config.peerids: '/etc/timebeat/peerids.json'
+
+  # Configuration for clock synchronisation
+  clock_sync:
+
+    # Clocksync
+
+    # Default is true enabling clock synchronisation, setting to false for monitoring purposes only (false will not adjust the clock)
+    adjust_clock: true
+
+    # To remove step limit restrictions comment out the below, this will allow the clock to be stepped indefinitely
+    step_limit: 999999999d # "s", "h" "d" can be used to denominate seconds, hours or days for step limit.
+
+    primary_clocks:
+
+      # PTP Config example
+      - protocol:                 ptp
+        domain:                   0
+        serve_multicast:         true
+        server_only:             true
+        announce_interval:        1
+        sync_interval:            0
+        delayrequest_interval:    0
+        disable:                  false  # Disable clock config
+        #use_layer2:              false      # Use ptp over ethernet instead of IP/UDP
+        interface:               eth0
+        #profile:                 'G.8275.2' # other options which can be used are: 'G.8275.1', 'G.8265.1' and 'enterprise-draft'
+        #logsource:               'Grandmaster Clock in NY4' # configurable name for source included in all logging records for source
+        #peer_id:                 "Customer XYZ"
+        #sptp_enable:             false
+
+      # 1 Pulse-per-second input config example. 1-PPS out can be configured using Timebeat CLI
+      - protocol:          pps
+        interface:         eth0         # Ethernet interface - "ethtool -T <iface>" is your friend
+        pin:               0            # Typically the SDP number
+        index:             0            # Index / channel
+      #  cable_delay:       0            # Cable delay in nanoseconds (odds are ~5 ns per meter is a good value)
+      #  edge_mode:         "rising"     # PPS event trigger for older cards. Options are "rising", "falling" or "both"
+      #  monitor_only:      false        # Used for clock steering or just monitoring?
+      #  atomic:            false        # Indicate if oscillator is atomic
+        linked_device:     '/dev/ttyAMA0' # Linked NMEA or Timecard device ('ocp0/GNSS/1' for instance)
+                                         # NMEA/Timecard config must exist in secondary clocks). This keeps
+                                         # ptp clock class etc. honest.
+
+
+
+    # Secondary clocks. When all primary sources are unavailable the below will activate
+    secondary_clocks:
+
+      # NTP Config example
+      - protocol:      ntp
+        serve_unicast: true
+        interface:     eth0
+        ip: 127.0.0.1
+        poll_interval: 4s
+        server_only:           true
+
+      # Eight data bits, no parity bit, and one stop bit (8N1) is assumed
+      - protocol:     timebeat_opentimecard_mini   # Timebeat Timecard Mini
+        device:       '/dev/ttyAMA0'             # Serial device path
+        baud:         9600                     # Serial device baud rate
+#        card_config:  ['gnss1:signal:gps+glonass+galileo']
+
+        offset:       225000000                        # Static offset of RMC line
+
+
+    ptpsquared:
+
+
+    taas:
+
+    advanced:
+
+      # Steering Algorithm Options
+      steering:
+      # In the event an alternative system adjusts the clock, timebeat will cease active operation and transition into monitoring mode.
+      # period of time defined in the value below
+      interference_monitor:
+        backoff_timer: 5m
+
+      extended_step_limits:
+        #forward:
+          #boundary: 500ms
+          #limit: 15m
+        #backward:
+          #boundary: 500ms
+          #limit: 15m
+
+
+      linux_specific:
+
+        # Synchronise non-master PHC (nic) clocks on Linux
+        sync_nic_slaves: true
+
+
+      ptp_tuning:
+
+
+        # Clock Quality
+        clock_quality:
+        # auto:         true    # auto (default) set clock class, accuracy and time source
+        # class:        248     # Default. This clockClass shall be used if none
+                                # of the other clockClass definitions apply.
+        # accuracy:     0x23    # The time is accurate to within 1 μs.
+        # variance:     0xFFFF  # offset scaled log variance is unknown
+        # timesource:   0xA0    # INTERNAL_OSCILLATOR
+
+      cli:
+
+        # Enable the SSH based CLI interface. I.e. to access: ssh -p 65129 admin@127.0.0.1
+        enable: true
+        bind_port: 65129
+        bind_host: 127.0.0.1
+
+        # Server SSH key. If path specified key will be loaded or generated. Otherwise key will be random on startup
+        server_key: "/etc/timebeat/cli_id_rsa"
+
+        # Authorised SSH keys (yes... with an s not a z....)
+        # authorised_keys: "/etc/timebeat/authorised_keys"
+
+        # CLI username and password
+        username: "admin"
+        password: "password"
+
+      http:
+
+
+      logging:
+
+
+setup.dashboards.enabled: false
+
+
+# -------------------------------- File Output ---------------------------------
+output.file:
+  # Boolean flag to enable or disable the output module.
+  enabled: true
+
+  # Configure JSON encoding
+  #codec.json:
+    # Pretty-print JSON event
+    #pretty: false
+
+    # Configure escaping HTML symbols in strings.
+    #escape_html: false
+
+  # Path to the directory where to save the generated files. The option is
+  # mandatory.
+  path: "/tmp/timebeat"
+
+  # Name of the generated files. The default is `timebeat` and it generates
+  # files: `timebeat-{datetime}.ndjson`, `timebeat-{datetime}-1.ndjson`, etc.
+  filename: timebeat
+
+  # Maximum size in kilobytes of each file. When this size is reached, and on
+  # every Timebeat restart, the files are rotated. The default value is 10240
+  # kB.
+  rotate_every_kb: 10000
+
+  # Maximum number of files under path. When this number of files is reached,
+  # the oldest file is deleted and the rest are shifted from last to first. The
+  # default is 7 files.
+  number_of_files: 7
+
+  # Permissions to use for file creation. The default is 0600.
+  permissions: 0600
+
+  # Configure automatic file rotation on every startup. The default is true.
+  rotate_on_startup: true
+
+
+
+
+
+logging.to_files: true
+logging.files:
+  # Configure the path where the logs are written. The default is the logs directory
+  # under the home path (the binary location).
+  path: /var/log/timebeat
+
+  # The name of the files where the logs are written to.
+  name: timebeat
+
+  # Configure log file size limit. If limit is reached, log file will be
+  # automatically rotated
+  rotateeverybytes: 10485760 # = 10MB
+
+  # Number of rotated log files to keep. Oldest files will be deleted first.
+  keepfiles: 7
+
+  # The permissions mask to apply when rotating log files. The default value is 0600.
+  # Must be a valid Unix-style file permissions mask expressed in octal notation.
+  permissions: 0600
+
+
+# ============================== Process Security ==============================
+
+# Disable the filtering of syscalls as we require system clock access
+seccomp.enabled: false
