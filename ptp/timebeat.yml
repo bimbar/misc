@@ -65,8 +65,6 @@ timebeat:
       - protocol:      ntp
         serve_unicast: true
         interface:     eth0
-        ip: 127.0.0.1
-        poll_interval: 4s
         server_only:           true
 
       # Eight data bits, no parity bit, and one stop bit (8N1) is assumed
