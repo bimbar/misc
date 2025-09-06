@@ -1,0 +1,3 @@
+SYS_FAN2: top radiator, 45%
+SYS_FAN_PUMP5: front radiator, 45%
+SYS_FAN_PUMP6: GFX pump, 100%
