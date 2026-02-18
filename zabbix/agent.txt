@@ -4,7 +4,7 @@ ServerActive=<SERVERIP>
 TLSConnect=psk
 TLSAccept=psk
 TLSPSKIdentity=<RANDOM PSK IDENTITY STRING>
-TLSPSKFile=/etc/zabbix/pskfile.txt" > /etc/zabbix/server.conf
+TLSPSKFile=/etc/zabbix/pskfile.txt" > /etc/zabbix/zabbix-agent2.d/server.conf
 
 cat /dev/urandom | head -c 16 | od -An -tx1 | tr -d ' \n'  > /etc/zabbix/pskfile.txt
 chmod 644 /etc/zabbix/pskfile.txt
