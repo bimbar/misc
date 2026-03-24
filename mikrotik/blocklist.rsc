@@ -1,5 +1,6 @@
 #
 # Many thanks to https://forum.mikrotik.com/t/turn-mikrotik-into-a-powerfull-firewall-with-blacklist-firehol/164932/1
+# Also check https://help.mikrotik.com/docs/spaces/ROS/pages/328513/Building+Advanced+Firewall
 #
 
 ip firewall address-list
