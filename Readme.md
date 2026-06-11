@@ -5,3 +5,4 @@ And, maybe, other things.
 #PTP
 
 Best use https://github.com/jclark/rpi-cm4-ptp-guide, timebeat kind of sucks - it crashes, it has weird NTP issues, it has weird issues in general.
+Or JClarks other project, satpulse.
