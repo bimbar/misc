@@ -4,38 +4,44 @@
 #
 # Usage possible in steam to enable HDR in a game as follows
 #
-# hdr.sh on && gamescope --hdr-enabled -W3840 -H2160 -f --force-grab-cursor -- %command%; hdr.sh off
+# hdr.sh enable && gamescope --hdr-enabled -W3840 -H2160 -f --force-grab-cursor -- %command%; hdr.sh disable 
 #
 
-usage() { echo "Usage: $0 <on|off>" 1>&2; exit 1; }
+usage() { echo "Usage: $0 <enable|disable>" 1>&2; exit 1; }
 
 action=${1};
-brightness=100;
+brightness=`ddcutil -t -d 1 getvcp 10 | cut -w -f 4`;
 
+if [ "$(kscreen-doctor -o | ansi2txt | grep -cm1 "HDR: enabled")" -ge 1 ];
+then
+  state="enabled"
+  echo ${brightness} > ~/.hdr_brightness;
+else
+  state="disabled"
+  echo ${brightness} > ~/.sdr_brightness;
+fi;
 
 if [ -z $action ];
 then
-  if [ "$(kscreen-doctor -o | ansi2txt | grep -cm1 "HDR: enabled")" -ge 1 ];
+  if [ ${state} == "enabled" ];
   then
-    action="off";
-    brightness=`cat ~/.sdr_brightness`
-  else
-    brightness=`ddcutil -t -d 1 getvcp 10 | cut -w -f 4`
-    echo ${brightness} > ~/.sdr_brightness
-    action="on";
+    action="disable";
+  elif [ ${state} == "disabled" ];
+  then
+    action="enable";
   fi;
 fi;
 
-echo "SDR Brightness: ${brightness} HDR Brightness: 100"
-
-if [ ${action} == "on" ];
+if [ ${action} == "enable" ] || [ ${action} == "on" ];
 then
-  echo "Enabling HDR"
-  kscreen-doctor output.DP-1.wcg.enable output.DP-1.hdr.enable output.DP-1.brightness.100;
-elif [ ${action} == "off" ];
+  action="enable";
+  brightness=`cat ~/.hdr_brightness`;
+elif [ ${action} == "disable" ] || [ ${action} == "off" ];
 then
-  echo "Disabling HDR"
-  kscreen-doctor output.DP-1.wcg.disable output.DP-1.hdr.disable output.DP-1.brightness.${brightness};
-else
-  usage;
+  action="disable";
+  brightness=`cat ~/.sdr_brightness`;
 fi;
+
+echo "Brightness: ${brightness} HDR State: ${state} Action: ${action}"
+
+kscreen-doctor output.DP-1.wcg.${action} output.DP-1.hdr.${action} output.DP-1.brightness.${brightness};
